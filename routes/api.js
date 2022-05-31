@@ -132,7 +132,7 @@ router.delete(
   function (req, res) {
     var token = getToken(req.headers);
     if (token) {
-      Tech.destroy(req.params.id)
+      Tech.destroy({ where: { id: req.params.id } })
         .then((data) => {
           res.status(200).json({
             message: "Tech deleted successfully",
