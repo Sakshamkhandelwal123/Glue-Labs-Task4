@@ -1,8 +1,6 @@
-'use strict';
-var bcrypt = require('bcrypt-nodejs');
-const {
-  Model
-} = require('sequelize');
+"use strict";
+var bcrypt = require("bcrypt-nodejs");
+const { Model } = require("sequelize");
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -14,24 +12,39 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
-  User.init({
-    username: DataTypes.STRING,
-    password: DataTypes.STRING
-  }, {
-    sequelize,
-    modelName: 'User',
-  });
+  User.init(
+    {
+      username: DataTypes.STRING,
+      password: DataTypes.STRING,
+      role: {
+        type: String,
+        default: "basic",
+        enum: ["basic", "admin"],
+      },
+      accessToken: {
+        type: String,
+      }
+    },
+    {
+      sequelize,
+      modelName: "User",
+    }
+  );
   User.beforeSave((user, options) => {
-    if (user.changed('password')) {
-      user.password = bcrypt.hashSync(user.password, bcrypt.genSaltSync(10), null);
+    if (user.changed("password")) {
+      user.password = bcrypt.hashSync(
+        user.password,
+        bcrypt.genSaltSync(10),
+        null
+      );
     }
   });
   User.prototype.comparePassword = function (passw, cb) {
     bcrypt.compare(passw, this.password, function (err, isMatch) {
-        if (err) {
-            return cb(err);
-        }
-        cb(null, isMatch);
+      if (err) {
+        return cb(err);
+      }
+      cb(null, isMatch);
     });
   };
   return User;
