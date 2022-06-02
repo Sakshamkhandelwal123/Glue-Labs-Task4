@@ -153,7 +153,9 @@ router.post("/signin", function (req, res) {
  * @swagger
  * /api/tech:
  *  get:
- *    description: Use to get details of all tech
+ *    description: Use to get details of all tech\
+ *    security:
+ *      - jwt: []
  *    responses:
  *      '200': 
  *        description: A successful response
@@ -193,6 +195,8 @@ router.get(
  *        application/json:
  *          schema:
  *            $ref: '#components/schemas/Tech'
+ *    security:
+ *      - jwt: []
  *    responses:
  *      '200':
  *        description: Tech is succesfully uploaded
@@ -237,6 +241,8 @@ router.post(
  *        application/json:
  *          schema:
  *            $ref: '#components/schemas/Tech'
+ *    security:
+ *      - jwt: []
  *    responses:
  *      '200':
  *        description: Tech is succesfully updated
@@ -290,6 +296,8 @@ router.put(
  *        description: Numeric ID required
  *        schema: 
  *          type: integer
+ *    security:
+ *      - jwt: []
  *    responses:
  *      '200':
  *        description: Tech is succesfully deleted

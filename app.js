@@ -26,7 +26,20 @@ const swaggerOptions = {
       servers: [{
         api: "http://localhost:3000/"
       }]
-    }
+    },
+    components: {
+      securitySchemes: {
+        jwt: {
+          type: 'http',
+          scheme: "bearer",
+          in: "header",
+          bearerFormat: "JWT"
+        },
+      }
+    },
+    security:[{
+      jwt: []
+    }]
   },
   // ['.routes/*.js']
   apis: ["./routes/api.js"]
