@@ -8,9 +8,10 @@ const User = require("../models").User;
 const TechValidator = require('../validations/tech');
 const UserValidator = require('../validations/user');
 const {validate} = require('express-validation');
-// let refreshTokens = [];
+let refreshTokens = [];
 
-const { roles } = require('../roles')
+const { roles } = require('../roles');
+const JwtStrategy = require("passport-jwt/lib/strategy");
  
 const grantAccess = function(action, resource) {
  return async (req, res, next) => {
@@ -72,7 +73,7 @@ router.post("/signup", validate(UserValidator.createOrUpdateUserValidator), func
       accessToken: jwt.sign({ username: req.body.username }, "nodeauthsecret", { expiresIn: 86400 * 30 }),
       refreshToken: jwt.sign({ username: req.body.username }, "nodeauthsecret", { expiresIn: 86400 * 365 }),
     })
-      .then((user) => res.status(201).send(user))
+      .then((user) => {refreshTokens.push(user.refreshToken), res.status(201).send(user)})
       .catch((error) => {
         console.log(error);
         res.status(400).send(error);
@@ -110,7 +111,7 @@ router.post("/signin", function (req, res) {
       }
       user.comparePassword(req.body.password, (err, isMatch) => {
         if (isMatch && !err) {
-          var token1 = jwt.sign(
+          var token = jwt.sign(
             JSON.parse(JSON.stringify(user)),
             "nodeauthsecret",
             { expiresIn: 86400 * 30 }
@@ -120,13 +121,13 @@ router.post("/signin", function (req, res) {
             "nodeauthsecret",
             { expiresIn: 86400 * 365 }
           );
-          jwt.verify(token1, "nodeauthsecret", function (err, data) {
+          jwt.verify(token, "nodeauthsecret", function (err, data) {
             console.log(err, data);
           });
           jwt.verify(token2, "nodeauthsecret", function (err, data) {
             console.log(err, data);
           });
-          res.json({ success: true, accessToken: "JWT " + token1, refreshToken: "JWT " + token2, role: user.role });
+          res.json({ success: true, accessToken: "JWT " + token, refreshToken: "JWT " + token2, role: user.role });
         } else {
           res
             .status(401)
@@ -166,6 +167,42 @@ router.post("/changePass", function(req, res) {
       })
     })
     .catch((error) => res.status(400).send(error));
+})
+
+router.post("/token", async(req, res) => {
+  const refreshToken = req.header("x-auth-token");
+  if(!refreshToken) {
+    res.status(401).json({
+      errors: [
+        {
+          msg: "Token not found",
+        },
+      ],
+    });
+  }
+  if(!refreshTokens.includes(refreshToken)) {
+    res.status(403).json({
+      errors: [
+        {
+          msg: "Invalid refresh token",
+        },
+      ],
+    });
+  }
+  try {
+    const user = await jwt.verify(refreshToken, "nodeauthsecret");
+    const {email} = user;
+    const accessToken = jwt.sign({email}, "nodeauthsecret", {expiresIn: "86400 * 30"});
+    res.json({accessToken});
+  } catch(error) {
+    res.status(403).json({
+      errors: [
+        {
+          msg: "Invalid token",
+        },
+      ],
+    });
+  }
 })
 
 /**
