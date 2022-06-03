@@ -1,4 +1,7 @@
 'use strict';
+
+const { STRING } = require("sequelize/types");
+
 module.exports = {
   async up(queryInterface, Sequelize) {
     await queryInterface.createTable('Users', {
@@ -14,10 +17,16 @@ module.exports = {
       password: {
         type: Sequelize.STRING
       },
+      newPassword: {
+        type: Sequelize.STRING
+      },
       role: {
         type: Sequelize.STRING
       },
       accessToken: {
+        type: Sequelize.STRING
+      },
+      refreshToken: {
         type: Sequelize.STRING
       },
       createdAt: {

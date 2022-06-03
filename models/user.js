@@ -16,6 +16,7 @@ module.exports = (sequelize, DataTypes) => {
     {
       username: DataTypes.STRING,
       password: DataTypes.STRING,
+      newPassword: DataTypes.STRING,
       role: {
         type: String,
         default: "basic",
@@ -23,6 +24,9 @@ module.exports = (sequelize, DataTypes) => {
       },
       accessToken: {
         type: String,
+      },
+      refreshToken: {
+        type: String
       }
     },
     {
@@ -47,5 +51,17 @@ module.exports = (sequelize, DataTypes) => {
       cb(null, isMatch);
     });
   };
+  User.prototype.changePassword = function(newPass, cb) {
+    this.password = bcrypt.hashSync(
+      newPass,
+      bcrypt.genSaltSync(10),
+      null
+    );
+    User.update({
+      newPassword: this.password,
+      password: this.password
+    }, {where: {username: this.username}})
+    cb(null);
+  }
   return User;
 };

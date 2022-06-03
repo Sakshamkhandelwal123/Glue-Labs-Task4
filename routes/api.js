@@ -8,6 +8,7 @@ const User = require("../models").User;
 const TechValidator = require('../validations/tech');
 const UserValidator = require('../validations/user');
 const {validate} = require('express-validation');
+// let refreshTokens = [];
 
 const { roles } = require('../roles')
  
@@ -68,7 +69,8 @@ router.post("/signup", validate(UserValidator.createOrUpdateUserValidator), func
       username: req.body.username,
       password: req.body.password,
       role: req.body.role || 'basic',
-      accessToken: jwt.sign({ username: req.body.username }, "nodeauthsecret", { expiresIn: 86400 * 30 })
+      accessToken: jwt.sign({ username: req.body.username }, "nodeauthsecret", { expiresIn: 86400 * 30 }),
+      refreshToken: jwt.sign({ username: req.body.username }, "nodeauthsecret", { expiresIn: 86400 * 365 }),
     })
       .then((user) => res.status(201).send(user))
       .catch((error) => {
@@ -108,15 +110,23 @@ router.post("/signin", function (req, res) {
       }
       user.comparePassword(req.body.password, (err, isMatch) => {
         if (isMatch && !err) {
-          var token = jwt.sign(
+          var token1 = jwt.sign(
             JSON.parse(JSON.stringify(user)),
             "nodeauthsecret",
             { expiresIn: 86400 * 30 }
           );
-          jwt.verify(token, "nodeauthsecret", function (err, data) {
+          var token2 = jwt.sign(
+            JSON.parse(JSON.stringify(user)),
+            "nodeauthsecret",
+            { expiresIn: 86400 * 365 }
+          );
+          jwt.verify(token1, "nodeauthsecret", function (err, data) {
             console.log(err, data);
           });
-          res.json({ success: true, token: "JWT " + token, role: user.role });
+          jwt.verify(token2, "nodeauthsecret", function (err, data) {
+            console.log(err, data);
+          });
+          res.json({ success: true, accessToken: "JWT " + token1, refreshToken: "JWT " + token2, role: user.role });
         } else {
           res
             .status(401)
@@ -129,6 +139,34 @@ router.post("/signin", function (req, res) {
     })
     .catch((error) => res.status(400).send(error));
 });
+
+router.post("/changePass", function(req, res) {
+  User.findOne({
+    where: {
+      username: req.body.username,
+    },
+  })
+    .then((user) => {
+      if (!user) {
+        return res.status(401).send({
+          message: "Authentication failed. User not found.",
+        });
+      }
+      user.changePassword(req.body.newPassword, (err) => {
+        if(!err) {
+          res.json({ success: true });
+        } else {
+          res
+            .status(401)
+            .send({
+              success: false,
+              msg: "Authentication failed",
+            });
+        }
+      })
+    })
+    .catch((error) => res.status(400).send(error));
+})
 
 /**
  * @swagger
@@ -322,6 +360,20 @@ router.delete(
     }
   }
 );
+
+// function verifyRefreshToken(req, res, next) {
+//   const token = req.body.token;
+//   if(token == null) {
+//     return res.status(401).json({status: false, message: "Invalid request."});
+//   }
+//   try {
+//     const decoded = jwt.verify(token, "nodeauthsecret");
+//     req.user = decoded;
+//     next();
+//   } catch(error) {
+//     return res.status(401).json({status: true, message: "your session is not valid", data: error});
+//   }
+// }
 
 getToken = function (headers) {
   if (headers && headers.authorization) {
