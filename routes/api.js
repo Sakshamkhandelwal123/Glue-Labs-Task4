@@ -2,6 +2,9 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const router = express.Router();
+
+const redis = require("redis");
+
 require("../config/passport")(passport);
 const Tech = require("../models").Tech;
 const User = require("../models").User;
@@ -9,6 +12,15 @@ const TechValidator = require('../validations/tech');
 const UserValidator = require('../validations/user');
 const {validate} = require('express-validation');
 let refreshTokens = [];
+
+const redisPort = 6379
+const client = redis.createClient(redisPort);
+
+client.on("error", (err) => {
+    console.log(err);
+})
+
+client.connect();
 
 const { roles } = require('../roles');
 const JwtStrategy = require("passport-jwt/lib/strategy");
@@ -249,7 +261,22 @@ router.get(
     var token = getToken(req.headers);
     if (token) {
       Tech.findAll()
-        .then((techs) => res.status(200).send(techs))
+        .then( async (techs) => {
+          const reply = await client.get('tech');
+          if (reply) {
+            console.log('using cached data')
+            // res.status(200).send(techs);
+            console.log(reply);
+            res.send(JSON.parse(reply));
+            return
+          }
+          const saveResult = await client.setEx(
+            'tech', 10, 
+            JSON.stringify(techs)
+          )
+          console.log('new data cached', saveResult);
+          res.status(200).send(techs);
+        })
         .catch((error) => {
           res.status(400).send(error);
         });
@@ -290,7 +317,9 @@ router.post(
         budget: req.body.budget,
         contact_email: req.body.contact_email,
       })
-        .then((tech) => res.status(201).send(tech))
+        .then(async (tech) => {
+          res.status(201).send(tech);
+        })
         .catch((error) => res.status(400).send(error));
     } else {
       return res.status(403).send({ success: false, msg: "Unauthorized." });
@@ -397,20 +426,6 @@ router.delete(
     }
   }
 );
-
-// function verifyRefreshToken(req, res, next) {
-//   const token = req.body.token;
-//   if(token == null) {
-//     return res.status(401).json({status: false, message: "Invalid request."});
-//   }
-//   try {
-//     const decoded = jwt.verify(token, "nodeauthsecret");
-//     req.user = decoded;
-//     next();
-//   } catch(error) {
-//     return res.status(401).json({status: true, message: "your session is not valid", data: error});
-//   }
-// }
 
 getToken = function (headers) {
   if (headers && headers.authorization) {
