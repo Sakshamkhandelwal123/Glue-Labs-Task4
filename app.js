@@ -7,6 +7,8 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/users');
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+var cron = require('node-cron');
+var nodemailer = require('nodemailer');
 
 // let express to use this
 var app = express();
@@ -64,6 +66,29 @@ app.use('/api', apiRouter);
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
   next(createError(404));
+});
+
+var transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+          user: 'sakshamkhandelwal2001@gmail.com',   //put your mail here
+          pass: 'rbfpflfoohamnpdg'              //password here
+        }
+});
+const mailOptions = { 
+             from: 'sakshamkhandelwal2001@gmail.com',       // sender address
+             to: 'e19cse216@gmail.com',          // reciever address
+             subject: 'Tech List',  
+             html: '<p>hi your meeting in just 15 min</p>'// plain text body
+};
+
+cron.schedule('* * * * 0', function () {
+  transporter.sendMail(mailOptions, function (err, info) {
+    if(err) 
+      console.log(err);
+    else
+      console.log(info);
+     });
 });
 
 // error handler
