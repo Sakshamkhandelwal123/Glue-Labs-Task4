@@ -7,7 +7,7 @@ const TechValidations = {
       technologies: Joi.string().required(),
       description: Joi.string().min(10).max(200).required(),
       budget: Joi.string().required(),
-      contact_email: Joi.string().email().required()
+      contact_email: Joi.string().email().required(),
     }),
   },
 };

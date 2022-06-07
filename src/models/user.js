@@ -1,6 +1,7 @@
 "use strict";
 var bcrypt = require("bcrypt-nodejs");
 const { Model } = require("sequelize");
+
 module.exports = (sequelize, DataTypes) => {
   class User extends Model {
     /**
@@ -12,6 +13,7 @@ module.exports = (sequelize, DataTypes) => {
       // define association here
     }
   }
+
   User.init(
     {
       username: DataTypes.STRING,
@@ -26,14 +28,15 @@ module.exports = (sequelize, DataTypes) => {
         type: String,
       },
       refreshToken: {
-        type: String
-      }
+        type: String,
+      },
     },
     {
       sequelize,
       modelName: "User",
     }
   );
+
   User.beforeSave((user, options) => {
     if (user.changed("password")) {
       user.password = bcrypt.hashSync(
@@ -43,6 +46,7 @@ module.exports = (sequelize, DataTypes) => {
       );
     }
   });
+
   User.prototype.comparePassword = function (passw, cb) {
     bcrypt.compare(passw, this.password, function (err, isMatch) {
       if (err) {
@@ -51,17 +55,17 @@ module.exports = (sequelize, DataTypes) => {
       cb(null, isMatch);
     });
   };
-  User.prototype.changePassword = function(newPass, cb) {
-    this.password = bcrypt.hashSync(
-      newPass,
-      bcrypt.genSaltSync(10),
-      null
+
+  User.prototype.changePassword = function (newPass, cb) {
+    this.password = bcrypt.hashSync(newPass, bcrypt.genSaltSync(10), null);
+    User.update(
+      {
+        newPassword: this.password,
+        password: this.password,
+      },
+      { where: { username: this.username } }
     );
-    User.update({
-      newPassword: this.password,
-      password: this.password
-    }, {where: {username: this.username}})
     cb(null);
-  }
+  };
   return User;
 };
