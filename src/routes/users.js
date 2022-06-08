@@ -1,9 +1,10 @@
-const logger = require('../../utils/logger');
+const logger = require("../../utils/logger");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
 require("../../config/passport")(passport);
 const User = require("../models").User;
 let refreshTokens = [];
+const transporter = require("../../utils/sendMail").transporter;
 
 /**
  * @swagger
@@ -37,34 +38,47 @@ let refreshTokens = [];
  */
 
 async function Register(req, res) {
-    logger.info(req.body);
-    if (!req.body.username || !req.body.password) {
-      res.status(400).send({ msg: "Please pass username and password." });
-    } else {
-      User.create({
-        username: req.body.username,
-        password: req.body.password,
-        role: req.body.role || "basic",
-        accessToken: jwt.sign(
-          { username: req.body.username },
-          "nodeauthsecret",
-          { expiresIn: 86400 * 30 }
-        ),
-        refreshToken: jwt.sign(
-          { username: req.body.username },
-          "nodeauthsecret",
-          { expiresIn: 86400 * 365 }
-        ),
-      })
-        .then((user) => {
-          refreshTokens.push(user.refreshToken), res.status(201).send(user);
-        })
-        .catch((error) => {
-          logger.error(error);
-          res.status(400).send(error);
+  logger.info(JSON.stringify(req.body, null, 3));
+
+  if (!req.body.username || !req.body.password) {
+    res.status(400).send({ msg: "Please pass username and password." });
+  } 
+  
+  else {
+    User.create({
+      username: req.body.username,
+      password: req.body.password,
+      role: req.body.role || "basic",
+      accessToken: jwt.sign({ username: req.body.username }, "nodeauthsecret", {
+        expiresIn: 86400 * 30,
+      }),
+      refreshToken: jwt.sign(
+        { username: req.body.username },
+        "nodeauthsecret",
+        { expiresIn: 86400 * 365 }
+      ),
+    })
+      .then((user) => {
+        const mailOptions = {
+          from: process.env.SENDER_EMAIL, // sender address
+          to: req.body.username, // reciever address
+          subject: "Welcome",
+          html: "<h1>WELCOME TO BLOG APPLICATION. VISIT OUR SITE TO KNOW MORE.</h1>", // plain text body
+        };
+
+        transporter.sendMail(mailOptions, function (err, info) {
+          if (err) logger.error(err);
+          else logger.info(JSON.stringify(info, null, 3));
         });
-    }
+
+        refreshTokens.push(user.refreshToken), res.status(201).send(user);
+      })
+      .catch((error) => {
+        logger.error(error);
+        res.status(400).send(error);
+      });
   }
+}
 
 /**
  * @swagger
@@ -94,6 +108,7 @@ async function Login(req, res) {
           message: "Authentication failed. User not found.",
         });
       }
+
       user.comparePassword(req.body.password, (err, isMatch) => {
         if (isMatch && !err) {
           var token = jwt.sign(
@@ -101,24 +116,38 @@ async function Login(req, res) {
             "nodeauthsecret",
             { expiresIn: 86400 * 30 }
           );
+
           var token2 = jwt.sign(
             JSON.parse(JSON.stringify(user)),
             "nodeauthsecret",
             { expiresIn: 86400 * 365 }
           );
+
           jwt.verify(token, "nodeauthsecret", function (err, data) {
-            logger.info(err + data);
+            if (err) {
+              logger.error(err);
+            } else {
+              logger.info(JSON.stringify(data, null, 3));
+            }
           });
+
           jwt.verify(token2, "nodeauthsecret", function (err, data) {
-            logger.info(err + data);
+            if (err) {
+              logger.error(err);
+            } else {
+              logger.info(JSON.stringify(data, null, 3));
+            }
           });
+
           res.json({
             success: true,
             accessToken: "JWT " + token,
             refreshToken: "JWT " + token2,
             role: user.role,
           });
-        } else {
+        } 
+        
+        else {
           res.status(401).send({
             success: false,
             msg: "Authentication failed. Wrong password.",
@@ -141,6 +170,7 @@ async function ChangePassword(req, res) {
           message: "Authentication failed. User not found.",
         });
       }
+      
       user.changePassword(req.body.newPassword, (err) => {
         if (!err) {
           res.json({ success: true });
@@ -156,7 +186,7 @@ async function ChangePassword(req, res) {
 }
 
 module.exports = {
-  Register, 
+  Register,
   Login,
-  ChangePassword
+  ChangePassword,
 };

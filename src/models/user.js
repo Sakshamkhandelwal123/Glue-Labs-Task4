@@ -52,6 +52,7 @@ module.exports = (sequelize, DataTypes) => {
       if (err) {
         return cb(err);
       }
+
       cb(null, isMatch);
     });
   };
@@ -65,6 +66,7 @@ module.exports = (sequelize, DataTypes) => {
       },
       { where: { username: this.username } }
     );
+
     cb(null);
   };
   return User;

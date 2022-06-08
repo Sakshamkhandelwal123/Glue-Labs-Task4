@@ -17,6 +17,7 @@ async function Token(req, res) {
       ],
     });
   }
+
   if (!refreshTokens.includes(refreshToken)) {
     res.status(403).json({
       errors: [
@@ -26,6 +27,7 @@ async function Token(req, res) {
       ],
     });
   }
+
   try {
     const user = await jwt.verify(refreshToken, "nodeauthsecret");
     const { email } = user;
@@ -52,7 +54,9 @@ async function getToken(headers) {
     } else {
       return null;
     }
-  } else {
+  } 
+  
+  else {
     return null;
   }
 };

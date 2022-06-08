@@ -44,10 +44,12 @@ const getToken = require("../../utils/token").getToken;
 
 async function getTechs(req, res) {
   var token = getToken(req.headers);
+
   if (token) {
     Tech.findAll()
       .then(async (techs) => {
         const reply = await client.get("tech");
+
         if (reply) {
           logger.info("using cached data");
           // res.status(200).send(techs);
@@ -55,18 +57,23 @@ async function getTechs(req, res) {
           res.send(JSON.parse(reply));
           return;
         }
+
         const saveResult = await client.setEx(
           "tech",
           10,
           JSON.stringify(techs)
         );
+
         logger.info(`new data cached ${saveResult}`);
         res.status(200).send(techs);
       })
+
       .catch((error) => {
         res.status(400).send(error);
       });
-  } else {
+  } 
+  
+  else {
     return res.status(403).send({ success: false, msg: "Unauthorized." });
   }
 }
@@ -91,6 +98,7 @@ async function getTechs(req, res) {
 
 async function postTechs(req, res) {
   var token = getToken(req.headers);
+
   if (token) {
     Tech.create({
       title: req.body.title,
@@ -103,7 +111,9 @@ async function postTechs(req, res) {
         res.status(201).send(tech);
       })
       .catch((error) => res.status(400).send(error));
-  } else {
+  } 
+  
+  else {
     return res.status(403).send({ success: false, msg: "Unauthorized." });
   }
 }
@@ -141,6 +151,7 @@ async function postTechs(req, res) {
 
 async function updateTechs(req, res) {
   var token = getToken(req.headers);
+
   if (token) {
     Tech.update(
       {
@@ -159,7 +170,9 @@ async function updateTechs(req, res) {
         });
       })
       .catch((error) => res.status(400).send(error));
-  } else {
+  } 
+  
+  else {
     return res.status(403).send({ success: false, msg: "Unauthorized." });
   }
 }
@@ -185,6 +198,7 @@ async function updateTechs(req, res) {
 
 async function deleteTechs(req, res) {
   var token = getToken(req.headers);
+  
   if (token) {
     Tech.destroy({ where: { id: req.params.id } })
       .then((data) => {
@@ -194,7 +208,9 @@ async function deleteTechs(req, res) {
         });
       })
       .catch((error) => res.status(400).send(error));
-  } else {
+  } 
+  
+  else {
     return res.status(403).send({ success: false, msg: "Unauthorized." });
   }
 }

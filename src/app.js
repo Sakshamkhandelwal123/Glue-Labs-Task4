@@ -6,11 +6,7 @@ var morgan = require("morgan");
 var indexRouter = require("../src/routes/index");
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
-var cron = require("node-cron");
-var nodemailer = require("nodemailer");
-const logger = require('../utils/logger');
 
-// let express to use this
 var app = express();
 var apiRouter = require("../src/routes/api");
 
@@ -66,33 +62,13 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/api", apiRouter);
+
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
   next(createError(404));
 });
 
-var transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: "example@gmail.com", //put your mail here
-    pass: "rbfpflfoohamnpdg", //password here
-  },
-});
-const mailOptions = {
-  from: "example@gmail.com", // sender address
-  to: "glue@gmail.com", // reciever address
-  subject: "Tech List",
-  html: "<p>hi your meeting in just 15 min</p>", // plain text body
-};
-
-cron.schedule("* * * * 0", function () {
-  transporter.sendMail(mailOptions, function (err, info) {
-    if (err) 
-      logger.error(err);
-    else 
-      logger.info(info);
-  });
-});
+require("../utils/cronScheduler")();
 
 // error handler
 app.use(function (err, req, res, next) {
