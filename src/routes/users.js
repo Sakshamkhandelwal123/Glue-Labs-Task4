@@ -5,6 +5,8 @@ require("../../config/passport")(passport);
 const User = require("../models").User;
 let refreshTokens = [];
 const transporter = require("../../utils/sendMail").transporter;
+const Queue = require('bull');
+require("dotenv").config();
 
 async function Register(req, res) {
   logger.info(JSON.stringify(req.body, null, 3));
@@ -28,16 +30,22 @@ async function Register(req, res) {
       ),
     })
       .then((user) => {
-        const mailOptions = {
-          from: process.env.SENDER_EMAIL, // sender address
-          to: req.body.username, // reciever address
-          subject: "Welcome",
-          html: "<h1>WELCOME TO BLOG APPLICATION. VISIT OUR SITE TO KNOW MORE.</h1>", // plain text body
+        // Queue
+        const sendMailQueue = new Queue('sendMail');
+
+        const data = {
+          email: req.body.username
         };
 
-        transporter.sendMail(mailOptions, function (err, info) {
-          if (err) logger.error(err);
-          else logger.info(JSON.stringify(info, null, 3));
+        const options = {
+          delay: 60000, // 1 min in ms
+          attempts: 2
+        };
+
+        sendMailQueue.add(data, options);
+        
+        sendMailQueue.process(async job => { 
+          return await sendMail(job.data.email); 
         });
 
         refreshTokens.push(user.refreshToken), res.status(201).send(user);
@@ -136,6 +144,26 @@ async function ChangePassword(req, res) {
       });
     })
     .catch((error) => res.status(400).send(error));
+}
+
+function sendMail(email) {
+  return new Promise((resolve, reject) => {
+    let mailOptions = {
+      from: process.env.SENDER_EMAIL,
+      to: email,
+      subject: "Welcome",
+      html: "<h1>WELCOME TO BLOG APPLICATION. VISIT OUR SITE TO KNOW MORE.</h1>", 
+    };
+    transporter.sendMail(mailOptions, (err, info) => {
+      if (err) {
+        logger.error(err);
+        reject(err);
+      } else {
+        logger.info(JSON.stringify(info, null, 3));
+        resolve(info);
+      }
+    });
+  });
 }
 
 module.exports = {
