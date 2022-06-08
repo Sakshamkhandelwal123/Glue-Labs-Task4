@@ -5,43 +5,6 @@ const logger = require("../../utils/logger");
 const client = require("../../utils/redis_connect");
 const getToken = require("../../utils/token").getToken;
 
-/**
- * @swagger
- *  components:
- *    schemas:
- *      Tech:
- *        type: object
- *        properties:
- *          title:
- *            type: string
- *          technologies:
- *            type: string
- *          description:
- *            type: string
- *          budget:
- *            type: string
- *          contact_email:
- *            type: string
- */
-
-/**
- * @swagger
- * /api/tech:
- *  get:
- *    description: Use to get details of all tech\
- *    security:
- *      - jwt: []
- *    responses:
- *      '200':
- *        description: A successful response
- *        content:
- *          application/json:
- *            schema:
- *              type: array
- *              items:
- *                $ref: '#components/schemas/Tech'
- */
-
 async function getTechs(req, res) {
   var token = getToken(req.headers);
 
@@ -78,24 +41,6 @@ async function getTechs(req, res) {
   }
 }
 
-/**
- * @swagger
- * /api/tech:
- *  post:
- *    description: Use to upload tech
- *    requestBody:
- *      required: true
- *      content:
- *        application/json:
- *          schema:
- *            $ref: '#components/schemas/Tech'
- *    security:
- *      - jwt: []
- *    responses:
- *      '200':
- *        description: Tech is succesfully uploaded
- */
-
 async function postTechs(req, res) {
   var token = getToken(req.headers);
 
@@ -117,37 +62,6 @@ async function postTechs(req, res) {
     return res.status(403).send({ success: false, msg: "Unauthorized." });
   }
 }
-
-/**
- * @swagger
- * /api/tech/{id}:
- *  put:
- *    description: Use to update tech
- *    parameters:
- *      - in: path
- *        name: id
- *        required: true
- *        description: Numeric ID required
- *        schema:
- *          type: integer
- *    requestBody:
- *      required: true
- *      content:
- *        application/json:
- *          schema:
- *            $ref: '#components/schemas/Tech'
- *    security:
- *      - jwt: []
- *    responses:
- *      '200':
- *        description: Tech is succesfully updated
- *        content:
- *          application/json:
- *            schema:
- *              type: array
- *              items:
- *                $ref: '#components/schemas/Tech'
- */
 
 async function updateTechs(req, res) {
   var token = getToken(req.headers);
@@ -176,25 +90,6 @@ async function updateTechs(req, res) {
     return res.status(403).send({ success: false, msg: "Unauthorized." });
   }
 }
-
-/**
- * @swagger
- * /api/tech/{id}:
- *  delete:
- *    description: Use to delete tech
- *    parameters:
- *      - in: path
- *        name: id
- *        required: true
- *        description: Numeric ID required
- *        schema:
- *          type: integer
- *    security:
- *      - jwt: []
- *    responses:
- *      '200':
- *        description: Tech is succesfully deleted
- */
 
 async function deleteTechs(req, res) {
   var token = getToken(req.headers);

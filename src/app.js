@@ -4,50 +4,12 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var morgan = require("morgan");
 var indexRouter = require("../src/routes/index");
-const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const swaggerDocs = require("../config/swagger");
 
 var app = express();
-var apiRouter = require("../src/routes/api");
+var apiRouter = require("./routes/api");
 
-// Extended: https://swagger.io/specification/#infoObject
-const swaggerOptions = {
-  swaggerDefinition: {
-    openapi: "3.0.0",
-    info: {
-      version: "1.0.0",
-      title: "Rest API",
-      description: "Rest API Information",
-      contact: {
-        name: "Saksham",
-      },
-      servers: [
-        {
-          api: "http://localhost:3000/",
-        },
-      ],
-    },
-    components: {
-      securitySchemes: {
-        jwt: {
-          type: "http",
-          scheme: "bearer",
-          in: "header",
-          bearerFormat: "JWT",
-        },
-      },
-    },
-    security: [
-      {
-        jwt: [],
-      },
-    ],
-  },
-  // ['.routes/*.js']
-  apis: ["./routes/api"],
-};
-
-const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // view engine setup

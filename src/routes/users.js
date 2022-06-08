@@ -6,37 +6,6 @@ const User = require("../models").User;
 let refreshTokens = [];
 const transporter = require("../../utils/sendMail").transporter;
 
-/**
- * @swagger
- *  components:
- *    schemas:
- *      User:
- *        type: object
- *        properties:
- *          username:
- *            type: string
- *          password:
- *            type: string
- *          role:
- *            type: string
- */
-
-/**
- * @swagger
- * /api/signup:
- *  post:
- *    description: Use to add users
- *    requestBody:
- *      required: true
- *      content:
- *        application/json:
- *          schema:
- *            $ref: '#components/schemas/User'
- *    responses:
- *      '200':
- *        description: User successfully added
- */
-
 async function Register(req, res) {
   logger.info(JSON.stringify(req.body, null, 3));
 
@@ -79,22 +48,6 @@ async function Register(req, res) {
       });
   }
 }
-
-/**
- * @swagger
- * /api/signin:
- *  post:
- *    description: Use to signin
- *    requestBody:
- *      required: true
- *      content:
- *        application/json:
- *          schema:
- *            $ref: '#components/schemas/User'
- *    responses:
- *      '200':
- *        description: A successful response
- */
 
 async function Login(req, res) {
   User.findOne({
