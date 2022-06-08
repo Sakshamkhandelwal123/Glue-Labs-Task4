@@ -5,7 +5,7 @@ const transporter = require('./sendMail').transporter;
 
 const mailOptions = {
   from: process.env.SENDER_EMAIL, // sender address
-  to: "exmaple@gmail.com", // reciever address
+  to: "admin@gmail.com", // reciever address
   subject: "Tech List",
   html: "<p>WELCOME TO BLOG APPLICATION. VISIT OUR SITE TO KNOW MORE.</p>", // plain text body
 };
