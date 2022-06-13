@@ -10,6 +10,7 @@ const UserValidator = require("../validations/user");
 const TechValidator = require("../validations/tech");
 const grantAccess = require("../../utils/role_access");
 const token = require("../../utils/token");
+const rateLimiter = require('../../utils/rateLimiter');
 
 //Routes
 /**
@@ -109,7 +110,7 @@ router.post("/changePass", users.ChangePassword);
 router.get(
   "/tech",
   passport.authenticate("jwt", { session: false }),
-  grantAccess("readAny", "tech"),
+  grantAccess("readAny", "tech"), rateLimiter({secondsWindow: 60, allowedHits: 4}),
   techs.getTechs
 );
 
