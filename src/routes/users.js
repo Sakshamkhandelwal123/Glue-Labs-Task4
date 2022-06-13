@@ -5,7 +5,7 @@ require("../../config/passport")(passport);
 const User = require("../models").User;
 let refreshTokens = [];
 const transporter = require("../../utils/sendMail").transporter;
-const Queue = require('bull');
+const Queue = require("bull");
 require("dotenv").config();
 
 async function Register(req, res) {
@@ -13,9 +13,7 @@ async function Register(req, res) {
 
   if (!req.body.username || !req.body.password) {
     res.status(400).send({ msg: "Please pass username and password." });
-  } 
-  
-  else {
+  } else {
     User.create({
       username: req.body.username,
       password: req.body.password,
@@ -31,21 +29,21 @@ async function Register(req, res) {
     })
       .then((user) => {
         // Queue
-        const sendMailQueue = new Queue('sendMail');
+        const sendMailQueue = new Queue("sendMail");
 
         const data = {
-          email: req.body.username
+          email: req.body.username,
         };
 
         const options = {
           delay: 60000, // 1 min in ms
-          attempts: 2
+          attempts: 2,
         };
 
         sendMailQueue.add(data, options);
-        
-        sendMailQueue.process(async job => { 
-          return await sendMail(job.data.email); 
+
+        sendMailQueue.process(async (job) => {
+          return await sendMail(job.data.email);
         });
 
         refreshTokens.push(user.refreshToken), res.status(201).send(user);
@@ -106,9 +104,7 @@ async function Login(req, res) {
             refreshToken: "JWT " + token2,
             role: user.role,
           });
-        } 
-        
-        else {
+        } else {
           res.status(401).send({
             success: false,
             msg: "Authentication failed. Wrong password.",
@@ -131,7 +127,7 @@ async function ChangePassword(req, res) {
           message: "Authentication failed. User not found.",
         });
       }
-      
+
       user.changePassword(req.body.newPassword, (err) => {
         if (!err) {
           res.json({ success: true });
@@ -152,7 +148,7 @@ function sendMail(email) {
       from: process.env.SENDER_EMAIL,
       to: email,
       subject: "Welcome",
-      html: "<h1>WELCOME TO BLOG APPLICATION. VISIT OUR SITE TO KNOW MORE.</h1>", 
+      html: "<h1>WELCOME TO BLOG APPLICATION. VISIT OUR SITE TO KNOW MORE.</h1>",
     };
     transporter.sendMail(mailOptions, (err, info) => {
       if (err) {

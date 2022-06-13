@@ -6,6 +6,31 @@ const client = require("../../utils/redis_connect");
 const getToken = require("../../utils/token").getToken;
 
 async function getTechs(req, res) {
+  async function isOverLimit(ip) {
+    // to define
+    let res;
+    try {
+      res = await client.incr(ip);
+    } catch (err) {
+      logger.error("isOverLimit: could not increment key");
+      throw err;
+    }
+    logger.info(`${ip} has value: ${res}`);
+    if (res > 10) {
+      return true;
+    }
+    client.expire(ip, 10);
+  }
+  // check rate limit
+  let overLimit = await isOverLimit(req.ip);
+  if (overLimit) {
+    logger.warn("Too many requests - try again later");
+    res.status(429).send("Too many requests - try again later");
+    return;
+  }
+  // allow access to resources
+  logger.info("Accessed the precious resources!");
+
   var token = getToken(req.headers);
 
   if (token) {
