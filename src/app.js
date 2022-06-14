@@ -6,6 +6,8 @@ var morgan = require("morgan");
 var indexRouter = require("../src/routes/index");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocs = require("../config/swagger");
+const schema = require("./graphql/schema/tech");
+const expressGraphQL = require("express-graphql").graphqlHTTP;
 
 var app = express();
 var apiRouter = require("./routes/api");
@@ -24,6 +26,14 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/api", apiRouter);
+app.use(
+  "/graphql",
+  expressGraphQL({
+    schema: schema,
+    rootValue: global,
+    graphiql: true,
+  })
+);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {
