@@ -6,8 +6,13 @@ var morgan = require("morgan");
 var indexRouter = require("../src/routes/index");
 const swaggerUi = require("swagger-ui-express");
 const swaggerDocs = require("../config/swagger");
-const schema = require("./graphql/schema/tech");
+// const schema = require("./graphql/schema/tech");
 const expressGraphQL = require("express-graphql").graphqlHTTP;
+const { makeExecutableSchema } = require("@graphql-tools/schema");
+
+const { loadSchemaSync } = require("@graphql-tools/load");
+const { GraphQLFileLoader } = require("@graphql-tools/graphql-file-loader");
+const graphqlResolver = require("./graphql/resolvers");
 
 var app = express();
 var apiRouter = require("./routes/api");
@@ -26,6 +31,14 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/api", apiRouter);
+
+const schema = makeExecutableSchema({
+  typeDefs: loadSchemaSync("src/**/*.graphql", {
+    loaders: [new GraphQLFileLoader()],
+  }),
+  resolvers: graphqlResolver,
+});
+
 app.use(
   "/graphql",
   expressGraphQL({

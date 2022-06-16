@@ -1,0 +1,8 @@
+type Query {
+  _empty: String
+  # define any root queries here
+}
+type Mutation {
+  _empty: String
+  # define any root queries here
+}

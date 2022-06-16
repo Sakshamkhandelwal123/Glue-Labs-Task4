@@ -1,0 +1,42 @@
+type TechType {
+  id: Int!
+  title: String
+  technologies: String
+  description: String
+  budget: String
+  contact_email: String
+  createdAt: String
+  updatedAt: String
+}
+
+extend type Query {
+  techs: [TechType]
+  tech(id: Int!): TechType!
+}
+
+input AddTech {
+  title: String!
+  technologies: String!
+  description: String!
+  budget: String!
+  contact_email: String!
+}
+
+input UpdateTech {
+  id: Int!
+  title: String!
+  technologies: String!
+  description: String!
+  budget: String!
+  contact_email: String!
+}
+
+input DeleteTech {
+  id: Int!
+}
+
+extend type Mutation {
+  createTech(newTech: AddTech): TechType!
+  updateTech(updatedTech: UpdateTech): TechType!
+  deleteTech(deletedTech: DeleteTech): TechType!
+}
