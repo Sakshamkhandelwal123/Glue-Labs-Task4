@@ -1,0 +1,28 @@
+type UserType {
+  id: Int!
+  username: String
+  password: String
+  newPassword: String
+  role: String
+  accessToken: String
+  refreshToken: String
+  createdAt: String
+  updatedAt: String
+}
+
+input AddUser {
+  username: String!
+  password: String!
+  role: String!
+}
+
+input LoginUser {
+  username: String!
+  password: String!
+  role: String
+}
+
+extend type Mutation {
+  SignUp(newUser: AddUser): UserType!
+  LogIn(oldUser: LoginUser): UserType!
+}
