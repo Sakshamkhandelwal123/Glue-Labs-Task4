@@ -2,15 +2,18 @@ const express = require("express");
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
 const router = express.Router();
-require("../../config/passport")(passport);
+const { validate } = require("express-validation");
+require("dotenv").config();
+
 const users = require("../routes/users");
 const techs = require("../routes/techs");
-const { validate } = require("express-validation");
 const UserValidator = require("../validations/user");
 const TechValidator = require("../validations/tech");
-const grantAccess = require("../../utils/role_access");
+const authRole = require("../../utils/role_access");
+const Role = require("../roles/roles");
 const token = require("../../utils/token");
-const rateLimiter = require('../../utils/rateLimiter');
+const rateLimiter = require("../../utils/rateLimiter");
+require("../../config/passport")(passport);
 
 //Routes
 /**
@@ -110,7 +113,10 @@ router.post("/changePass", users.ChangePassword);
 router.get(
   "/tech",
   passport.authenticate("jwt", { session: false }),
-  grantAccess("readAny", "tech"), rateLimiter({secondsWindow: 60, allowedHits: 4}),
+  rateLimiter({
+    secondsWindow: process.env.SECONDS_WINDOW,
+    allowedHits: process.env.ALLOWED_HITS,
+  }),
   techs.getTechs
 );
 
@@ -136,7 +142,7 @@ router.post(
   "/tech",
   validate(TechValidator.createOrUpdateTechValidator),
   passport.authenticate("jwt", { session: false }),
-  grantAccess("createOwn", "tech"),
+  authRole(Role.ADMIN),
   techs.postTechs
 );
 
@@ -174,7 +180,7 @@ router.post(
 router.put(
   "/tech/:id",
   passport.authenticate("jwt", { session: false }),
-  grantAccess("updateAny", "tech"),
+  authRole(Role.ADMIN),
   techs.updateTechs
 );
 
@@ -200,7 +206,7 @@ router.put(
 router.delete(
   "/tech/:id",
   passport.authenticate("jwt", { session: false }),
-  grantAccess("deleteAny", "tech"),
+  authRole(Role.ADMIN),
   techs.deleteTechs
 );
 

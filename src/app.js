@@ -1,18 +1,19 @@
-var createError = require("http-errors");
-var express = require("express");
-var path = require("path");
-var cookieParser = require("cookie-parser");
-var morgan = require("morgan");
-var indexRouter = require("../src/routes/index");
-const swaggerUi = require("swagger-ui-express");
-const swaggerDocs = require("../config/swagger");
-// const schema = require("./graphql/schema/tech");
+const createError = require("http-errors");
+const express = require("express");
+const path = require("path");
+const cookieParser = require("cookie-parser");
+const morgan = require("morgan");
 const expressGraphQL = require("express-graphql").graphqlHTTP;
 const { makeExecutableSchema } = require("@graphql-tools/schema");
-
 const { loadSchemaSync } = require("@graphql-tools/load");
 const { GraphQLFileLoader } = require("@graphql-tools/graphql-file-loader");
 const graphqlResolver = require("./graphql/resolvers");
+const swaggerUi = require("swagger-ui-express");
+
+const swaggerDocs = require("../config/swagger");
+var indexRouter = require("../src/routes/index");
+
+// const schema = require("./graphql/schema/tech");
 
 var app = express();
 var apiRouter = require("./routes/api");

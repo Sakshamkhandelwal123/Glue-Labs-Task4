@@ -1,82 +1,99 @@
-const User = require("../../models").User;
-let refreshTokens = [];
 const jwt = require("jsonwebtoken");
 const passport = require("passport");
+require("dotenv").config();
+
+const User = require("../../models").User;
 require("../../../config/passport")(passport);
+
+let refreshTokens = [];
 
 const userResolvers = {
   Mutation: {
-    SignUp: (parent, { newUser }) => {
-      User.create({
-        username: newUser.username,
-        password: newUser.password,
-        role: newUser.role || "basic",
-        accessToken: jwt.sign({ username: newUser.username }, "nodeauthsecret", {
-          expiresIn: 86400 * 30,
-        }),
-        refreshToken: jwt.sign(
-          { username: newUser.username },
-          "nodeauthsecret",
-          { expiresIn: 86400 * 365 }
-        ),
-      })
-        .then((user) => {
-          refreshTokens.push(user.refreshToken)
-          return user;
-        })
-        .catch((error) => {
-          throw new Error(error);
+    
+    SignUp: async (parent, { newUser }) => {
+      const { username, password, role } = newUser;
+      
+      try {
+        let user = await User.create({
+          username,
+          password,
+          role,
+          
+          accessToken: jwt.sign({ username }, process.env.SECRET_KEY, {
+            expiresIn: 86400 * 30,
+          }),
+          
+          refreshToken: jwt.sign({ username }, process.env.SECRET_KEY, {
+            expiresIn: 86400 * 365,
+          }),
+
         });
+
+        refreshTokens.push(user.refreshToken);
+        return user;
+
+      } catch (error) {
+        throw new Error(error);
+      }
     },
-    LogIn: (parent, { oldUser }) => {
-      User.findOne({
-        where: {
-          username: oldUser.username,
-        },
-      })
-        .then((user) => {
-          if (!user) {
-            throw new Error("Authentication failed. User not found.")
-          }
-          user.comparePassword(oldUser.password, (err, isMatch) => {
-            if (isMatch && !err) {
-              var token = jwt.sign(
-                JSON.parse(JSON.stringify(user)),
-                "nodeauthsecret",
-                { expiresIn: 86400 * 30 }
-              );
-    
-              var token2 = jwt.sign(
-                JSON.parse(JSON.stringify(user)),
-                "nodeauthsecret",
-                { expiresIn: 86400 * 365 }
-              );
-    
-              jwt.verify(token, "nodeauthsecret", function (err, data) {
-                if (err) {
-                  throw new Error(err);
-                }
-              });
-    
-              jwt.verify(token2, "nodeauthsecret", function (err, data) {
-                if (err) {
-                  throw new Error(err);
-                } 
-              });
-    
-              return({
-                success: true,
-                accessToken: "JWT " + token,
-                refreshToken: "JWT " + token2,
-                role: user.role,
-              });
-            } else {
-                throw new Error("Authentication failed. Wrong password.")
-            }
-          });
-        })
-        .catch((error) => {throw new Error(error)});
-    }
+
+    LogIn: async (parent, { oldUser }) => {
+      const { username, password } = oldUser;
+
+      try {
+        let user = await User.findOne({
+          where: {
+            username,
+          },
+        });
+
+        if (!user) {
+          throw new Error("Authentication failed. User not found.");
+        }
+
+        user.comparePassword(password, (err, isMatch) => {
+          if (isMatch && !err) {
+            
+            var token = jwt.sign(
+              JSON.parse(JSON.stringify(user)),
+              process.env.SECRET_KEY,
+              { expiresIn: 86400 * 30 }
+            );
+
+            var token2 = jwt.sign(
+              JSON.parse(JSON.stringify(user)),
+              process.env.SECRET_KEY,
+              { expiresIn: 86400 * 365 }
+            );
+
+            jwt.verify(token, process.env.SECRET_KEY, function (err, data) {
+              if (err) {
+                throw new Error(err);
+              }
+            });
+
+            jwt.verify(token2, process.env.SECRET_KEY, function (err, data) {
+              if (err) {
+                throw new Error(err);
+              }
+            });
+
+            return {
+              success: true,
+              accessToken: "JWT " + token,
+              refreshToken: "JWT " + token2,
+              role: user.role,
+            };
+
+          } 
+          
+          throw new Error("Authentication failed. Wrong password.");
+
+        });
+      } catch (error) {
+        throw new Error(error);
+      }
+    },
   },
 };
 

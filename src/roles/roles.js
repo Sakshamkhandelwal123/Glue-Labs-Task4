@@ -1,14 +1,21 @@
-const AccessControl = require("accesscontrol");
-const ac = new AccessControl();
+const Role = {
+  ADMIN: "admin",
+  BASIC: "basic",
+};
 
-exports.roles = (function () {
-  ac.grant("basic").readAny("tech");
+module.exports = Role;
 
-  ac.grant("admin")
-    .extend("basic")
-    .createAny("tech")
-    .updateAny("tech")
-    .deleteAny("tech");
+// const AccessControl = require("accesscontrol");
+// const ac = new AccessControl();
 
-  return ac;
-})();
+// exports.roles = (function () {
+//   ac.grant("basic").readAny("tech");
+
+//   ac.grant("admin")
+//     .extend("basic")
+//     .createAny("tech")
+//     .updateAny("tech")
+//     .deleteAny("tech");
+
+//   return ac;
+// })();

@@ -4,9 +4,10 @@
  * Module dependencies.
  */
 
-var app = require("../src/app");
 var debug = require("debug")("glue-labs-task3-2:server");
 var http = require("http");
+
+var app = require("../src/app");
 var logger = require("../utils/logger");
 
 /**
