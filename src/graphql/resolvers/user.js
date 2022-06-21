@@ -9,12 +9,12 @@ let refreshTokens = [];
 
 const userResolvers = {
   Mutation: {
-    
     SignUp: async (parent, { newUser }) => {
       const { username, password, role } = newUser;
-      
+      let user;
+
       try {
-        let user = await User.create({
+        user = await User.create({
           username,
           password,
           role,
@@ -26,12 +26,11 @@ const userResolvers = {
           refreshToken: jwt.sign({ username }, process.env.SECRET_KEY, {
             expiresIn: 86400 * 365,
           }),
-
         });
 
         refreshTokens.push(user.refreshToken);
-        return user;
 
+        return user;
       } catch (error) {
         throw new Error(error);
       }
@@ -39,9 +38,10 @@ const userResolvers = {
 
     LogIn: async (parent, { oldUser }) => {
       const { username, password } = oldUser;
+      let user;
 
       try {
-        let user = await User.findOne({
+        user = await User.findOne({
           where: {
             username,
           },
@@ -80,15 +80,13 @@ const userResolvers = {
 
             return {
               success: true,
-              accessToken: "JWT " + token,
-              refreshToken: "JWT " + token2,
+              accessToken: `JWT ${token}`,
+              refreshToken: `JWT ${token2}`,
               role: user.role,
             };
-
           } 
           
           throw new Error("Authentication failed. Wrong password.");
-
         });
       } catch (error) {
         throw new Error(error);

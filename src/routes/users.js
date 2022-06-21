@@ -13,13 +13,14 @@ async function Register(req, res) {
   logger.info(JSON.stringify(req.body, null, 3));
 
   const { username, password, role } = req.body;
+  let user;
 
   if (!username || !password) {
     return res.status(400).send({ msg: "Please pass username and password." });
   }
 
   try {
-    let user = await User.create({
+    user = await User.create({
       username,
       password,
       role: role || "basic",
@@ -36,7 +37,6 @@ async function Register(req, res) {
     sendUserMail(username);
 
     refreshTokens.push(user.refreshToken), res.status(201).send(user);
-
   } catch (error) {
     logger.error(error);
     res.status(400).send(error);
@@ -45,9 +45,10 @@ async function Register(req, res) {
 
 async function Login(req, res) {
   const { username, password } = req.body;
+  let user;
 
   try {
-    let user = await User.findOne({
+    user = await User.findOne({
       where: {
         username,
       },
@@ -101,7 +102,6 @@ async function Login(req, res) {
         success: false,
         msg: "Authentication failed. Wrong password.",
       });
-
     });
   } catch (error) {
     res.status(400).send(error);
@@ -110,9 +110,10 @@ async function Login(req, res) {
 
 async function ChangePassword(req, res) {
   const { username, newPassword } = req.body;
+  let user;
 
   try {
-    let user = await User.findOne({
+    user = await User.findOne({
       where: {
         username,
       },
@@ -134,7 +135,6 @@ async function ChangePassword(req, res) {
         msg: "Authentication failed",
       });
     });
-
   } catch (error) {
     res.status(400).send(error);
   }

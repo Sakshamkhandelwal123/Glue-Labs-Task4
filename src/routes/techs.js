@@ -10,8 +10,10 @@ async function getTechs(req, res) {
   var token = getToken(req.headers);
 
   if (token) {
+    let techs;
+
     try {
-      const techs = await Tech.findAll();
+      techs = await Tech.findAll();
       
       const reply = await client.get("tech");
 
@@ -26,8 +28,8 @@ async function getTechs(req, res) {
       const saveResult = await client.setEx("tech", 10, JSON.stringify(techs));
 
       logger.info(`new data cached ${saveResult}`);
-      return res.status(200).send(techs);
 
+      return res.status(200).send(techs);
     } catch (error) {
       return (res.status(400).send(error));
     }
@@ -41,8 +43,10 @@ async function postTechs(req, res) {
   const { title, technologies, description, budget, contact_email } = req.body;
 
   if (token) {
+    let tech;
+
     try {
-      let tech = await Tech.create({
+      tech = await Tech.create({
         title,
         technologies,
         description,
@@ -51,7 +55,6 @@ async function postTechs(req, res) {
       });
 
       return res.status(201).send(tech);
-
     } catch (error) {
       return res.status(400).send(error);
     }
@@ -66,8 +69,10 @@ async function updateTechs(req, res) {
   const { title, technologies, description, budget, contact_email } = req.body;
 
   if (token) {
+    let data;
+
     try {
-      let data = await Tech.update(
+      data = await Tech.update(
         {
           title,
           technologies,
@@ -87,7 +92,6 @@ async function updateTechs(req, res) {
         message: "Tech updated successfully",
         tech: data,
       });
-
     } catch (error) {
       return res.status(400).send(error);
     }
@@ -100,8 +104,10 @@ async function deleteTechs(req, res) {
   var token = getToken(req.headers);
 
   if (token) {
+    let data;
+
     try {
-      let data = await Tech.destroy({ where: { id: req.params.id } });
+      data = await Tech.destroy({ where: { id: req.params.id } });
 
       if(!data) {
         return res.status(400).send("Something went wrong!!!");
@@ -111,7 +117,6 @@ async function deleteTechs(req, res) {
         message: "Tech deleted successfully",
         tech: data,
       });
-
     } catch (error) {
       return res.status(400).send(error);
     }

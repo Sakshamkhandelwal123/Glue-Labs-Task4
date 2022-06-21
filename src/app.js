@@ -37,6 +37,7 @@ const schema = makeExecutableSchema({
   typeDefs: loadSchemaSync("src/**/*.graphql", {
     loaders: [new GraphQLFileLoader()],
   }),
+  
   resolvers: graphqlResolver,
 });
 

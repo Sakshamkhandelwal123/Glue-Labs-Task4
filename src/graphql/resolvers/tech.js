@@ -38,51 +38,45 @@ const techResolvers = {
     },
 
     updateTech: async (parent, { updatedTech }) => {
+      let tech;
+
       try {
-        let tech = await Tech.findByPk(updatedTech.id);
+        tech = await Tech.findByPk(updatedTech.id);
 
         if (!tech) {
           throw new Error("Not Found");
         }
 
-        try {
-          const { title, technologies, description, budget, contact_email } =
-            updatedTech;
+        const { title, technologies, description, budget, contact_email } =
+          updatedTech;
 
-          tech.update({
-            title: title || tech.title,
-            technologies: technologies || tech.technologies,
-            description: description || tech.description,
-            budget: budget || tech.budget,
-            contact_email: contact_email || tech.contact_email,
-          });
+        tech.update({
+          title: title || tech.title,
+          technologies: technologies || tech.technologies,
+          description: description || tech.description,
+          budget: budget || tech.budget,
+          contact_email: contact_email || tech.contact_email,
+        });
 
-          return tech;
-
-        } catch (error) {
-          throw new Error(error);
-        }
+        return tech;
       } catch (error) {
         throw new Error(error);
       }
     },
 
     deleteTech: async (parent, { deletedTech }) => {
+      let tech;
+
       try {
-        let tech = await Tech.findByPk(deletedTech.id);
+        tech = await Tech.findByPk(deletedTech.id);
 
         if (!tech) {
           throw new Error("Not Found");
         }
 
-        try {
-          
-          tech.destroy();
-          return tech;
+        tech.destroy();
 
-        } catch (error) {
-          throw new Error(error);
-        }
+        return tech;
       } catch (error) {
         throw new Error(error);
       }

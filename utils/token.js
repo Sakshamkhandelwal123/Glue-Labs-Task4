@@ -30,7 +30,6 @@ async function Token(req, res) {
   }
 
   try {
-
     const user = await jwt.verify(refreshToken, process.env.SECRET_KEY);
     const { email } = user;
     
@@ -39,9 +38,7 @@ async function Token(req, res) {
     });
     
     res.json({ accessToken });
-
   } catch (error) {
-    
     res.status(403).json({
       errors: [
         {
@@ -49,7 +46,6 @@ async function Token(req, res) {
         },
       ],
     });
-  
   }
 }
 

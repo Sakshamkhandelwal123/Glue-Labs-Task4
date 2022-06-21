@@ -14,8 +14,10 @@ module.exports = function (passport) {
   passport.use(
     "jwt",
     new JwtStrategy(opts, async function (jwt_payload, done) {
+      let user;
+
       try {
-        let user = await User.findByPk(jwt_payload.id);
+        user = await User.findByPk(jwt_payload.id);
         return done(null, user);
       } catch (error) {
         return done(error, false);
